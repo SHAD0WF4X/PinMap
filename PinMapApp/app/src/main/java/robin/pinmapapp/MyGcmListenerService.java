@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,7 +13,7 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
-public class MyGcmListenerService extends GcmListenerService {
+public class MyGcmListenerService extends GcmListenerService{
 
     private static final String TAG = "MyGcmListenerService";
 
@@ -30,11 +31,20 @@ public class MyGcmListenerService extends GcmListenerService {
         Log.d(TAG, "From: " + from);
         Log.d(TAG, "Message: " + message);
 
-        if (from.startsWith("/topics/")) {
-            // message received from some topic.
-        } else {
-            // normal downstream message.
-        }
+
+
+
+        int iId = -1;
+        try{
+            iId = Integer.parseInt(message);
+        }catch (Exception e){}
+
+        Intent bufferIntentSendCode = new Intent(MessageReceivedReceiver.BROAD);
+        bufferIntentSendCode.putExtra("id", iId);
+        getApplication().sendBroadcast(bufferIntentSendCode);
+
+
+
 
         // [START_EXCLUDE]
         /**
@@ -49,6 +59,8 @@ public class MyGcmListenerService extends GcmListenerService {
          * that a message was received.
          */
         sendNotification(message);
+
+
         // [END_EXCLUDE]
     }
     // [END receive_message]

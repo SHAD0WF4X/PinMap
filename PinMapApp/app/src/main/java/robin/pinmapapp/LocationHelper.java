@@ -20,12 +20,17 @@ public class LocationHelper {
     private LocationResult locationResult;
     private boolean gps_enabled;
     private boolean network_enabled;
+    public int id = -1;
 
     // Timer stoppen
     public void cancelTimer() {
         timer.cancel();
         lm.removeUpdates(locationListenerGps);
         lm.removeUpdates(locationListenerNetwork);
+    }
+
+    public LocationHelper(int id){
+        this.id=id;
     }
 
     // Locatie ophalen
