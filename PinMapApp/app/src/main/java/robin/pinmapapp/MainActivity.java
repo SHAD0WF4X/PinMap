@@ -9,6 +9,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,7 +20,13 @@ import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-public class MainActivity extends AppCompatActivity {
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity implements IApiCallback{
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainActivity";
@@ -27,11 +35,22 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar mRegistrationProgressBar;
     private TextView mInformationTextView;
     private boolean isReceiverRegistered;
+    private RecyclerView recyclerView;
+    private TransactionAdapter ta;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        recyclerView = (RecyclerView) findViewById(R.id.list);
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(layoutManager);
+
+
+        ta = new TransactionAdapter(new ArrayList<Transaction>(), this);
+        recyclerView.setAdapter(ta);
 
         mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
@@ -47,6 +66,13 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     mInformationTextView.setText(getString(R.string.token_error_message));
                 }
+
+                String url = "http://www.nielslindeboom.me/api_json.php?";
+                url += "gcm_id=" + sharedPreferences.getString(QuickstartPreferences.TOKEN, "TOKEN_ERROR");
+                RetrieveDataTask t = new RetrieveDataTask(MainActivity.this);
+                t.execute(url);
+
+
             }
         };
         mInformationTextView = (TextView) findViewById(R.id.informationTextView);
@@ -100,5 +126,40 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void onResult(String result) {
+        ArrayList<Transaction> list = new ArrayList<>();
+        int id;
+        String name, description, bedrag, datetime;
+
+        try{
+            JSONArray items = new JSONArray(result);
+
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject row = items.getJSONObject(i);
+                id = row.getInt("id");
+                name = row.getString("name");
+                description = row.getString("description");
+                //bedrag = row.getString("bedrag");
+                datetime = row.getString("date");
+
+                Transaction t = new Transaction();
+                //t.bedrag = bedrag;
+                t.id = id;
+                t.dateTime = datetime;
+                t.description = description;
+                t.name = name;
+                list.add(t);
+
+            }
+
+        }catch (Exception e){
+            Log.d(TAG, e.toString());
+        }
+
+        ta.setItems(list);
+        ta.notifyDataSetChanged();
     }
 }
