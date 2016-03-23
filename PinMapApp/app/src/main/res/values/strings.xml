@@ -13,4 +13,6 @@
         running the sample again.</string>
 
     <string name="google_app_id">pinmapapp-aaf67</string>
+    <string name="title_activity_transaction">TransactionActivity</string>
+    <string name="maps_key">AIzaSyDZFslSuSs-5qTM7jiXGRYDyHQFIK5Nbaw</string>
 </resources>

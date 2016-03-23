@@ -52,10 +52,9 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         holder.container.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent i = new Intent(c, TransactionActivity.class);
-//
-//                i.putExtra("itemid", listItems.get(holder.getLayoutPosition()).id);
-//                c.startActivity(i);
+        Intent i = new Intent(c, TransactionActivity.class);
+        i.putExtra("transaction", listItems.get(holder.getLayoutPosition()));
+        c.startActivity(i);
             }
         });
         return holder;
@@ -79,5 +78,9 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     public void setItems(ArrayList<Transaction> items){
         listItems.addAll(items);
+    }
+
+    public void clear(){
+        listItems.clear();
     }
 }

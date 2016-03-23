@@ -7,10 +7,12 @@ import android.location.Location;
 
 public class MessageReceivedReceiver extends BroadcastReceiver implements IApiCallback{
     public static final String BROAD = "BROADBROAD";
+    private Context c;
 
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        c = context;
         int id = intent.getIntExtra("id", -1);
         final LocationHelper myLocation = new LocationHelper(id);
         LocationHelper.LocationResult locationResult = new LocationHelper.LocationResult(){
@@ -36,5 +38,8 @@ public class MessageReceivedReceiver extends BroadcastReceiver implements IApiCa
     @Override
     public void onResult(String result) {
         String r = "prop succes";
+        Intent bufferIntentSendCode = new Intent(MainActivity.BROADCAST_BUFFER_SEND_CODE);
+        bufferIntentSendCode.putExtra("buffering", "1");
+        c.sendBroadcast(bufferIntentSendCode);
     }
 }

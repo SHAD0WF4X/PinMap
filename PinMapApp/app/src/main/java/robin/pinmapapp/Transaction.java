@@ -1,9 +1,10 @@
 package robin.pinmapapp;
 
+import java.io.Serializable;
 import java.util.GregorianCalendar;
 
-public class Transaction {
+public class Transaction implements Serializable{
     public int id = -1;
-    public double lat = -300, lon = -300;
+    public Double lat = null, lon = null;
     public String name = "", description = "", dateTime = "", bedrag = "";
 }

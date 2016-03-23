@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -37,11 +38,14 @@ public class MainActivity extends AppCompatActivity implements IApiCallback{
     private boolean isReceiverRegistered;
     private RecyclerView recyclerView;
     private TransactionAdapter ta;
+    public static final String BROADCAST_BUFFER_SEND_CODE = "com.example.SEND_CODE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        registerReceiver(broadcastBufferReceiver, new IntentFilter(BROADCAST_BUFFER_SEND_CODE));
 
         recyclerView = (RecyclerView) findViewById(R.id.list);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -90,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements IApiCallback{
     @Override
     protected void onResume() {
         super.onResume();
+        registerReceiver(broadcastBufferReceiver, new IntentFilter(BROADCAST_BUFFER_SEND_CODE));
         registerReceiver();
     }
 
@@ -97,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements IApiCallback{
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
         isReceiverRegistered = false;
+        unregisterReceiver(broadcastBufferReceiver);
         super.onPause();
     }
 
@@ -142,15 +148,25 @@ public class MainActivity extends AppCompatActivity implements IApiCallback{
                 id = row.getInt("id");
                 name = row.getString("name");
                 description = row.getString("description");
-                //bedrag = row.getString("bedrag");
+                bedrag = row.getString("amount");
                 datetime = row.getString("date");
 
+
                 Transaction t = new Transaction();
-                //t.bedrag = bedrag;
+                t.bedrag = bedrag;
                 t.id = id;
                 t.dateTime = datetime;
                 t.description = description;
                 t.name = name;
+
+
+                try{
+                    Double lat = row.getDouble("lat");
+                    Double lon = row.getDouble("lon");
+                    t.lat = lat;
+                    t.lon = lon;
+                }catch (Exception e){}
+
                 list.add(t);
 
             }
@@ -162,4 +178,21 @@ public class MainActivity extends AppCompatActivity implements IApiCallback{
         ta.setItems(list);
         ta.notifyDataSetChanged();
     }
+
+    private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent bufferIntent) {
+            Toast.makeText(context, "Refresh", Toast.LENGTH_SHORT).show();
+            ta.clear();
+
+            SharedPreferences sharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(context);
+            String url = "http://www.nielslindeboom.me/api_json.php?";
+            url += "gcm_id=" + sharedPreferences.getString(QuickstartPreferences.TOKEN, "TOKEN_ERROR");
+            RetrieveDataTask t = new RetrieveDataTask(MainActivity.this);
+            t.execute(url);
+
+        }
+    };
+
 }
